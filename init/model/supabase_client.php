@@ -149,10 +149,12 @@ final class SupabaseClient
             $http['content'] = $encoded;
         }
 
-        $responseHeaders = [];
         $response = @file_get_contents($url, false, stream_context_create(['http' => $http]));
-        if (isset($http_response_header) && is_array($http_response_header)) {
-            $responseHeaders = $http_response_header;
+        if (function_exists('http_get_last_response_headers')) {
+            $responseHeaders = http_get_last_response_headers() ?: [];
+        } else {
+            // Compatibility fallback for PHP versions before 8.4.
+            $responseHeaders = $http_response_header ?? [];
         }
 
         $status = 0;

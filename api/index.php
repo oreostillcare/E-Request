@@ -1,5 +1,8 @@
 <?php
 
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+
 $projectRoot = dirname(__DIR__);
 $requestPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
 $requestPath = str_replace('\\', '/', $requestPath);
