@@ -41,6 +41,10 @@
                                 </div>
                             </li><br>
 
+                            <li class="nav-item sidebar-logout-item">
+                                <a class="nav-link sidebar-logout-link" href="logout/logout.php"><i class="fas fa-fw fa-sign-out-alt"></i>Logout</a>
+                            </li>
+
                         </ul>
                     </div>
                 </nav>

@@ -1,4 +1,4 @@
-        <?php include('main_header/header.php');?>
+<?php include('main_header/header.php');?>
         <!-- ============================================================== -->
         <!-- end navbar -->
         <!-- ============================================================== -->
@@ -36,78 +36,104 @@
                 <!-- end pageheader -->
                 <!-- ============================================================== -->
                     <?php
-                        $student_id = $_SESSION['student_id'];
+                        $student_id = (int) $_SESSION['student_id'];
                         $conn = new class_model();
                         $user = $conn->student_profile($student_id);
+                        $escape = static fn ($value): string => htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+                        $firstName = trim((string) ($user['first_name'] ?? ''));
+                        $middleName = trim((string) ($user['middle_name'] ?? ''));
+                        $lastName = trim((string) ($user['last_name'] ?? ''));
+                        $fullName = trim(implode(' ', array_filter([$firstName, $middleName, $lastName])));
+                        $initials = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
+                        $initials = $initials !== '' ? $initials : 'ST';
+                        $profilePhotoUrl = $conn->student_profile_photo_url($student_id);
+                        $createdAt = trim((string) ($user['date_created'] ?? ''));
+                        $createdTimestamp = $createdAt !== '' ? strtotime($createdAt) : false;
+                        $joinedDate = $createdTimestamp !== false ? date('M d, Y', $createdTimestamp) : 'Not available';
                     ?>
                     <div class="row">
                         <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                                    <div class="card influencer-profile-data">
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-xl-2 col-lg-4 col-md-4 col-sm-4 col-12">
-                                                    <div class="text-center">
-                                                        <div id="profileImage_2"></div>
-                                                     <!--    <img src="../assets/images/256-128.webp" alt="User Avatar" class="rounded-circle user-avatar-xxl"> -->
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-xl-10 col-lg-8 col-md-8 col-sm-8 col-12">
-                                                        <div class="user-avatar-info">
-                                                            <div class="m-b-20">
-                                                                <div class="user-avatar-name">
-                                                                    <h2 class="mb-1"><span id="firstName"><?= ucfirst($user['first_name']).' </span>'.ucfirst($user['middle_name']).'<span id="lastName"> '.ucfirst($user['last_name']); ?></span></h2>
-                                                                </div><br>
-                                                            </div>
-                                                            <!--  <div class="float-right"><a href="#" class="user-avatar-email text-secondary">www.henrybarbara.com</a></div> -->
-                                                            <div class="user-avatar-address">
-                                                                <p class="border-bottom pb-3">
-                                                                    <span class="d-xl-inline-block d-block mb-2"><i class="fa fa-map-marker-alt mr-2 text-primary "></i><?= ucfirst($user['complete_address']); ?></span>
-                                                                    <span class="mb-2 ml-xl-4 d-xl-inline-block d-block">Joined date: <?= date("M d, Y",strtotime($user['date_created'])); ?> </span>
-                                                                    <span class=" mb-2 d-xl-inline-block d-block ml-xl-4"><?= ucfirst($user['gender']); ?> 
-                                                                            </span>
-                                                                  <!--   <span class=" mb-2 d-xl-inline-block d-block ml-xl-4">29 Year Old </span> -->
-                                                                </p>
-                                                                <p class="border-bottom pb-3">
-                                                                    <span class="d-xl-inline-block d-block mb-2"><i class="fa fa-certificate mr-2 text-primary "></i><?= ucfirst($user['strand']); ?></span>
-                                                                    <span class="mb-2 ml-xl-4 d-xl-inline-block d-block"><?= ucfirst($user['grade_level']); ?> </span>
-                                                                </p>
-                                                                <div class="mt-3">
-                                                                    <a href="#" class="badge badge-light mr-1"><i class="fa fa-fw fa-envelope"></i> <?= ucfirst($user['email_address']); ?></a> <a href="#" class="badge badge-light mr-1"><i class="fa fa-fw fa-phone"></i> <?= ucfirst($user['mobile_number']); ?></a>
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                            <div class="card influencer-profile-data profile-card-modern">
+                                <div class="card-body p-0">
+                                    <section class="profile-overview">
+                                        <div class="profile-photo-panel">
+                                            <div class="profile-photo-preview" id="profilePhotoPreview">
+                                                <span class="profile-photo-initials"><?= $escape($initials); ?></span>
+                                                <img id="profilePhotoImage" src="<?= $escape($profilePhotoUrl); ?>" alt="<?= $escape($fullName !== '' ? $fullName . ' profile photo' : 'Student profile photo'); ?>" onerror="this.classList.add('d-none')">
+                                                <span class="profile-photo-camera"><i class="fas fa-camera"></i></span>
+                                            </div>
+                                            <form id="profilePhotoForm" enctype="multipart/form-data">
+                                                <input class="profile-photo-input" type="file" id="profilePhotoInput" name="profile_photo" accept="image/jpeg,image/png,image/webp">
+                                                <label class="btn profile-photo-select" for="profilePhotoInput"><i class="fas fa-image mr-2"></i>Choose Photo</label>
+                                                <button class="btn profile-photo-upload d-none" id="profilePhotoUpload" type="submit"><i class="fas fa-cloud-upload-alt mr-2"></i>Upload Photo</button>
+                                                <p class="profile-photo-help">JPG, PNG, or WebP &middot; Max 5 MB</p>
+                                                <div id="photoMessage" aria-live="polite"></div>
+                                            </form>
+                                        </div>
+
+                                        <div class="profile-details">
+                                            <div class="profile-name-row">
+                                                <div>
+                                                    <span class="profile-eyebrow">Student profile</span>
+                                                    <h2 class="profile-student-name"><span id="firstName"><?= $escape(ucfirst($firstName)); ?></span><?= $middleName !== '' ? ' ' . $escape(ucfirst($middleName)) : ''; ?> <span id="lastName"><?= $escape(ucfirst($lastName)); ?></span></h2>
+                                                </div>
+                                                <span class="profile-status"><span></span> Active</span>
+                                            </div>
+
+                                            <div class="profile-meta-grid">
+                                                <div class="profile-meta-item">
+                                                    <span class="profile-meta-icon"><i class="fas fa-map-marker-alt"></i></span>
+                                                    <div><small>Address</small><strong><?= $escape($user['complete_address'] ?? 'Not available'); ?></strong></div>
+                                                </div>
+                                                <div class="profile-meta-item">
+                                                    <span class="profile-meta-icon"><i class="fas fa-calendar-alt"></i></span>
+                                                    <div><small>Joined</small><strong><?= $escape($joinedDate); ?></strong></div>
+                                                </div>
+                                                <div class="profile-meta-item">
+                                                    <span class="profile-meta-icon"><i class="fas fa-user"></i></span>
+                                                    <div><small>Gender</small><strong><?= $escape($user['gender'] ?? 'Not available'); ?></strong></div>
+                                                </div>
+                                                <div class="profile-meta-item">
+                                                    <span class="profile-meta-icon"><i class="fas fa-graduation-cap"></i></span>
+                                                    <div><small>Strand / Grade</small><strong><?= $escape(trim((string) ($user['strand'] ?? '') . ' / ' . (string) ($user['grade_level'] ?? ''), ' /')); ?></strong></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="profile-contact-row">
+                                                <span><i class="fas fa-envelope"></i><?= $escape($user['email_address'] ?? 'Not available'); ?></span>
+                                                <span><i class="fas fa-phone"></i><?= $escape($user['mobile_number'] ?? 'Not available'); ?></span>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section class="profile-account-section">
+                                        <div class="profile-section-heading">
+                                            <span class="profile-section-icon"><i class="fas fa-shield-alt"></i></span>
+                                            <div><h3>Account Security</h3><p>Update the password used to access your account.</p></div>
+                                        </div>
+                                        <form id="validationform" data-parsley-validate="" novalidate="" method="POST">
+                                            <div id="message"></div>
+                                            <div class="profile-account-grid">
+                                                <div class="form-group">
+                                                    <label for="profileUsername">Username</label>
+                                                    <input id="profileUsername" type="text" name="username" value="<?= $escape($user['username'] ?? ''); ?>" class="form-control" readonly>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="profilePassword">New Password</label>
+                                                    <div class="profile-password-field">
+                                                        <input id="profilePassword" type="password" name="password" required="" placeholder="Enter a new password" class="form-control" autocomplete="new-password">
+                                                        <button type="button" id="toggleProfilePassword" aria-label="Show password"><i class="fas fa-eye"></i></button>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="border-top user-social-box">
-                                                <form id="validationform" data-parsley-validate="" novalidate="" method="POST">
-                                                    <div class="form-group row">
-                                                        <label class="col-12 col-sm-3 col-form-label text-sm-right"><i class="fa fa-user"></i> Account Info</label>
-                                                    </div>
-                                                    <div class="" id="message"></div>
-                                                    <div class="form-group row">
-                                                        <label class="col-12 col-sm-3 col-form-label text-sm-right">Username</label>
-                                                        <div class="col-12 col-sm-8 col-lg-6">
-                                                            <input data-parsley-type="alphanum" type="text" name="username" value="<?= $user['username']; ?>" required="" placeholder="" class="form-control" readonly>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row">
-                                                        <label class="col-12 col-sm-3 col-form-label text-sm-right">Password</label>
-                                                        <div class="col-12 col-sm-8 col-lg-6">
-                                                            <input data-parsley-type="alphanum" type="password" name="password" value="<?= $user['password']; ?>" required="" placeholder="" class="form-control">
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group row text-right">
-                                                        <div class="col col-sm-10 col-lg-9 offset-sm-1 offset-lg-0">
-                                                              <input name="student_id" value="<?= $user['student_id']; ?>" class="form-control" hidden>
-                                                            <button type="button" class="btn btn-space btn-primary" id="btn-change">Save Changes</button>
-                                                            <button class="btn btn-space btn-secondary">Cancel</button>
-                                                        </div>
-                                                    </div>
-                                                </form>
+                                            <input name="student_id" value="<?= $student_id; ?>" type="hidden">
+                                            <div class="profile-account-actions">
+                                                <button type="button" class="btn btn-primary" id="btn-change"><i class="fas fa-save mr-2"></i>Save Password</button>
+                                                <button type="reset" class="btn btn-light">Cancel</button>
                                             </div>
-                                        </div>
-                                    </div>
+                                        </form>
+                                    </section>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -124,84 +150,140 @@
     <script src="../assets/vendor/parsley/parsley.js"></script>
     <script src="../assets/libs/js/main-js.js"></script>
     <script>
-    $('#form').parsley();
-    </script>
-       <script type="text/javascript">
-        $(document).ready(function(){
-          var firstName = $('#firstName').text();
-          var lastName = $('#lastName').text();
-          var intials = $('#firstName').text().charAt(0) + $('#lastName').text().charAt(0);
-          var profileImage = $('#profileImage').text(intials);
+    document.addEventListener('DOMContentLoaded', function () {
+        var photoForm = document.getElementById('profilePhotoForm');
+        var photoInput = document.getElementById('profilePhotoInput');
+        var photoImage = document.getElementById('profilePhotoImage');
+        var uploadButton = document.getElementById('profilePhotoUpload');
+        var photoMessage = document.getElementById('photoMessage');
+        var allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+        var maximumSize = 5 * 1024 * 1024;
+
+        function setPhotoMessage(message, type) {
+            photoMessage.className = message ? 'profile-photo-message ' + type : '';
+            photoMessage.textContent = message;
+        }
+
+        photoInput.addEventListener('change', function () {
+            var file = photoInput.files[0];
+            setPhotoMessage('', '');
+            uploadButton.classList.add('d-none');
+            if (!file) {
+                return;
+            }
+            if (allowedTypes.indexOf(file.type) === -1) {
+                photoInput.value = '';
+                setPhotoMessage('Please choose a JPG, PNG, or WebP image.', 'is-error');
+                return;
+            }
+            if (file.size > maximumSize) {
+                photoInput.value = '';
+                setPhotoMessage('Photo must be 5 MB or smaller.', 'is-error');
+                return;
+            }
+
+            photoImage.src = URL.createObjectURL(file);
+            photoImage.classList.remove('d-none');
+            uploadButton.classList.remove('d-none');
         });
-    </script>
-    <script type="text/javascript">
-        $(document).ready(function(){
-          var firstName = $('#firstName').text();
-          var lastName = $('#lastName').text();
-          var intials = $('#firstName').text().charAt(0) + $('#lastName').text().charAt(0);
-          var profileImage_2 = $('#profileImage_2').text(intials);
-        });
-    </script>
-    <script>
-    // Example starter JavaScript for disabling form submissions if there are invalid fields
-    (function() {
-        'use strict';
-        window.addEventListener('load', function() {
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.getElementsByClassName('needs-validation');
-            // Loop over them and prevent submission
-            var validation = Array.prototype.filter.call(forms, function(form) {
-                form.addEventListener('submit', function(event) {
-                    if (form.checkValidity() === false) {
-                        event.preventDefault();
-                        event.stopPropagation();
+
+        photoForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (!photoInput.files[0]) {
+                setPhotoMessage('Please choose a photo first.', 'is-error');
+                return;
+            }
+
+            var originalButtonText = uploadButton.innerHTML;
+            uploadButton.disabled = true;
+            uploadButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading...';
+            setPhotoMessage('', '');
+
+            fetch('../init/controllers/upload_profile_photo.php', {
+                method: 'POST',
+                body: new FormData(photoForm),
+                credentials: 'same-origin'
+            })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        if (!response.ok || !data.success) {
+                            throw new Error(data.message || 'Upload failed.');
+                        }
+                        return data;
+                    });
+                })
+                .then(function (data) {
+                    photoImage.src = data.photo_url;
+                    photoImage.classList.remove('d-none');
+
+                    var headerAvatar = document.getElementById('profileImage');
+                    var headerImage = headerAvatar ? headerAvatar.querySelector('.profile-photo-image') : null;
+                    if (headerAvatar && !headerImage) {
+                        headerImage = document.createElement('img');
+                        headerImage.className = 'profile-photo-image';
+                        headerImage.alt = 'Profile photo';
+                        headerAvatar.appendChild(headerImage);
                     }
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        }, false);
-    })();
+                    if (headerImage) {
+                        headerImage.src = data.photo_url;
+                    }
+
+                    photoInput.value = '';
+                    uploadButton.classList.add('d-none');
+                    setPhotoMessage(data.message, 'is-success');
+                })
+                .catch(function (error) {
+                    setPhotoMessage(error.message, 'is-error');
+                })
+                .finally(function () {
+                    uploadButton.disabled = false;
+                    uploadButton.innerHTML = originalButtonText;
+                });
+        });
+
+        var passwordInput = document.getElementById('profilePassword');
+        var passwordToggle = document.getElementById('toggleProfilePassword');
+        passwordToggle.addEventListener('click', function () {
+            var showPassword = passwordInput.type === 'password';
+            passwordInput.type = showPassword ? 'text' : 'password';
+            passwordToggle.innerHTML = showPassword ? '<i class="fas fa-eye-slash"></i>' : '<i class="fas fa-eye"></i>';
+            passwordToggle.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+        });
+
+        var accountForm = document.getElementById('validationform');
+        var saveButton = document.getElementById('btn-change');
+        saveButton.addEventListener('click', function () {
+            var password = passwordInput.value.trim();
+            var accountMessage = document.getElementById('message');
+            if (password === '') {
+                accountMessage.innerHTML = '<div class="alert alert-danger">Enter a new password.</div>';
+                passwordInput.focus();
+                return;
+            }
+
+            var originalSaveText = saveButton.innerHTML;
+            saveButton.disabled = true;
+            saveButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+            fetch('../init/controllers/change_password.php', {
+                method: 'POST',
+                body: new FormData(accountForm),
+                credentials: 'same-origin'
+            })
+                .then(function (response) { return response.text(); })
+                .then(function (html) {
+                    accountMessage.innerHTML = html;
+                    passwordInput.value = '';
+                })
+                .catch(function () {
+                    accountMessage.innerHTML = '<div class="alert alert-danger">Could not save the password. Please try again.</div>';
+                })
+                .finally(function () {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = originalSaveText;
+                });
+        });
+    });
     </script>
-          <script>
-          document.addEventListener('DOMContentLoaded', () => {
-              let btn = document.querySelector('#btn-change');
-              btn.addEventListener('click', () => {
-
-    
-                  const password = document.querySelector('input[name=password]').value;
-                  console.log(password);
-                  const student_id = document.querySelector('input[name=student_id]').value;
-                   console.log(student_id);
-
-                  var data = new FormData(this.form);
-                  data.append('password', password);
-                  data.append('student_id', student_id);
-
-
-              if (password === ''){
-                      $('#message').html('<div class="alert alert-danger"> Required All Fields!</div>');
-                    }else{
-                       $.ajax({
-                        url: '../init/controllers/change_password.php',
-                          type: "POST",
-                          data: data,
-                          processData: false,
-                          contentType: false,
-                          async: false,
-                          cache: false,
-                        success: function(response) {
-                          $("#message").html(response);
-                           window.scrollTo(0, 0);
-                          },
-                          error: function(response) {
-                            console.log("Failed");
-                          }
-                      });
-                   }
-
-              });
-          });
-      </script>
 </body>
  
 </html>

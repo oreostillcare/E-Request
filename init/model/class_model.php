@@ -54,8 +54,12 @@ class class_model
         return $this->attempt(function () use ($student_id) {
             $rows = $this->db->select('tbl_student', ['student_id' => 'eq.' . (int) $student_id], ['limit' => 1]);
             $student = $rows[0] ?? [];
-            return ['first_name' => $student['first_name'] ?? '', 'last_name' => $student['last_name'] ?? ''];
-        }, ['first_name' => '', 'last_name' => '']);
+            return [
+                'first_name' => $student['first_name'] ?? '',
+                'last_name' => $student['last_name'] ?? '',
+                'profile_photo_url' => $this->student_profile_photo_url($student_id),
+            ];
+        }, ['first_name' => '', 'last_name' => '', 'profile_photo_url' => '']);
     }
 
     public function student_profile($student_id): array
@@ -64,6 +68,33 @@ class class_model
             $rows = $this->db->select('tbl_student', ['student_id' => 'eq.' . (int) $student_id], ['limit' => 1]);
             return $rows[0] ?? [];
         }, []);
+    }
+
+    public function student_profile_photo_url($student_id): string
+    {
+        return $this->db->publicStorageUrl(
+            'profile-images',
+            'students/' . (int) $student_id . '/avatar'
+        );
+    }
+
+    public function upload_student_profile_photo($student_id, string $contents, string $contentType): string
+    {
+        return $this->attempt(function () use ($student_id, $contents, $contentType) {
+            $this->db->ensurePublicStorageBucket(
+                'profile-images',
+                5 * 1024 * 1024,
+                ['image/jpeg', 'image/png', 'image/webp']
+            );
+            $this->db->uploadStorageObject(
+                'profile-images',
+                'students/' . (int) $student_id . '/avatar',
+                $contents,
+                $contentType
+            );
+
+            return $this->student_profile_photo_url($student_id);
+        }, '');
     }
 
     public function get_request($request_id, $student_number, $student_id = null): array

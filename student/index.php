@@ -1,4 +1,4 @@
-        <?php include('main_header/header.php');?>
+<?php include('main_header/header.php');?>
         <!-- ============================================================== -->
         <!-- end navbar -->
         <!-- ============================================================== -->
@@ -102,14 +102,6 @@
     <script src="../assets/libs/js/main-js.js"></script>
      <!-- dashboard sales js-->
     <script src="../assets/libs/js/dashboard-sales.js"></script>
-     <script type="text/javascript">
-        $(document).ready(function(){
-          var firstName = $('#firstName').text();
-          var lastName = $('#lastName').text();
-          var intials = $('#firstName').text().charAt(0) + $('#lastName').text().charAt(0);
-          var profileImage = $('#profileImage').text(intials);
-        });
-    </script>
 </body>
  
 </html>

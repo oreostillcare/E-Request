@@ -1,4 +1,4 @@
-       <?php include('main_header/header.php');?>
+<?php include('main_header/header.php');?>
        <style type="text/css">
          .form-control:focus, .form-control:active {
     background: transparent;
@@ -173,14 +173,6 @@
               });
           });
       </script>
-      <script type="text/javascript">
-        $(document).ready(function(){
-          var firstName = $('#firstName').text();
-          var lastName = $('#lastName').text();
-          var intials = $('#firstName').text().charAt(0) + $('#lastName').text().charAt(0);
-          var profileImage = $('#profileImage').text(intials);
-        });
-    </script>
 
 
 <!--     <script>

@@ -19,6 +19,9 @@
                     <li class="nav-item ">
                         <a class="nav-link" href="profile.php"><i class="fa fa-fw fa-user-tie"></i>Profile <span class="badge badge-success">6</span></a>
                     </li>
+                    <li class="nav-item sidebar-logout-item">
+                        <a class="nav-link sidebar-logout-link" href="logout/logout.php"><i class="fas fa-fw fa-sign-out-alt"></i>Logout</a>
+                    </li>
                 </ul>
             </div>
         </nav>

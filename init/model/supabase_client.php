@@ -44,6 +44,7 @@ function load_project_environment(): void
 
 final class SupabaseClient
 {
+    private string $projectUrl;
     private string $restUrl;
     private string $apiKey;
 
@@ -57,6 +58,7 @@ final class SupabaseClient
             throw new RuntimeException('Supabase server environment variables are not configured.');
         }
 
+        $this->projectUrl = $url;
         $this->restUrl = $url . '/rest/v1';
         $this->apiKey = $key;
     }
@@ -102,6 +104,133 @@ final class SupabaseClient
     {
         $result = $this->request('DELETE', $table, $filters, null, 'return=minimal');
         return $result['status'] >= 200 && $result['status'] < 300;
+    }
+
+    public function ensurePublicStorageBucket(
+        string $bucket,
+        int $fileSizeLimit,
+        array $allowedMimeTypes
+    ): bool {
+        $this->validateStorageName($bucket);
+
+        try {
+            $this->storageRequest('GET', 'bucket/' . rawurlencode($bucket));
+            return true;
+        } catch (RuntimeException $error) {
+            if (!str_contains(strtolower($error->getMessage()), 'bucket not found')) {
+                throw $error;
+            }
+        }
+
+        $payload = json_encode([
+            'id' => $bucket,
+            'name' => $bucket,
+            'public' => true,
+            'file_size_limit' => $fileSizeLimit,
+            'allowed_mime_types' => array_values($allowedMimeTypes),
+        ], JSON_UNESCAPED_SLASHES);
+        if ($payload === false) {
+            throw new RuntimeException('Unable to encode the Supabase Storage bucket request.');
+        }
+
+        $this->storageRequest('POST', 'bucket', $payload, ['Content-Type: application/json']);
+        return true;
+    }
+
+    public function uploadStorageObject(
+        string $bucket,
+        string $objectPath,
+        string $contents,
+        string $contentType
+    ): bool {
+        $this->validateStorageName($bucket);
+        $encodedPath = implode('/', array_map('rawurlencode', explode('/', trim($objectPath, '/'))));
+        if ($encodedPath === '') {
+            throw new InvalidArgumentException('Invalid Supabase Storage object path.');
+        }
+
+        $result = $this->storageRequest(
+            'POST',
+            'object/' . rawurlencode($bucket) . '/' . $encodedPath,
+            $contents,
+            ['Content-Type: ' . $contentType, 'x-upsert: true']
+        );
+
+        return $result['status'] >= 200 && $result['status'] < 300;
+    }
+
+    public function publicStorageUrl(string $bucket, string $objectPath): string
+    {
+        $this->validateStorageName($bucket);
+        $encodedPath = implode('/', array_map('rawurlencode', explode('/', trim($objectPath, '/'))));
+        return $this->projectUrl . '/storage/v1/object/public/' . rawurlencode($bucket) . '/' . $encodedPath;
+    }
+
+    private function validateStorageName(string $bucket): void
+    {
+        if (!preg_match('/^[a-z0-9][a-z0-9-]*$/', $bucket)) {
+            throw new InvalidArgumentException('Invalid Supabase Storage bucket name.');
+        }
+    }
+
+    private function storageRequest(
+        string $method,
+        string $path,
+        ?string $content = null,
+        array $additionalHeaders = []
+    ): array {
+        $headers = [
+            'Accept: application/json',
+            'apikey: ' . $this->apiKey,
+            'User-Agent: E-Request-Server/1.0',
+        ];
+        if (str_starts_with($this->apiKey, 'eyJ')) {
+            $headers[] = 'Authorization: Bearer ' . $this->apiKey;
+        }
+        $headers = array_merge($headers, $additionalHeaders);
+
+        $http = [
+            'method' => $method,
+            'header' => implode("\r\n", $headers),
+            'ignore_errors' => true,
+            'timeout' => 20,
+        ];
+        if ($content !== null) {
+            $http['content'] = $content;
+        }
+
+        $url = $this->projectUrl . '/storage/v1/' . ltrim($path, '/');
+        $response = @file_get_contents($url, false, stream_context_create(['http' => $http]));
+        if (function_exists('http_get_last_response_headers')) {
+            $responseHeaders = http_get_last_response_headers() ?: [];
+        } else {
+            $responseHeaders = $http_response_header ?? [];
+        }
+
+        $status = 0;
+        foreach ($responseHeaders as $header) {
+            if (preg_match('/^HTTP\/\S+\s+(\d{3})/', $header, $matches)) {
+                $status = (int) $matches[1];
+            }
+        }
+
+        if ($response === false && $status === 0) {
+            throw new RuntimeException('Unable to reach Supabase Storage.');
+        }
+
+        $decoded = $response !== '' && $response !== false ? json_decode($response, true) : [];
+        if ($status < 200 || $status >= 300) {
+            $message = is_array($decoded)
+                ? (string) ($decoded['message'] ?? $decoded['error'] ?? 'Unexpected Supabase Storage response.')
+                : 'Unexpected Supabase Storage response.';
+            throw new RuntimeException('Supabase Storage request failed: ' . $message);
+        }
+
+        return [
+            'status' => $status,
+            'data' => is_array($decoded) ? $decoded : [],
+            'headers' => $responseHeaders,
+        ];
     }
 
     private function request(

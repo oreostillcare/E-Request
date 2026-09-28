@@ -1,11 +1,20 @@
-
 <?php
  
   include('../init/model/class_model.php');
        session_start();
 if (!(trim((string) ($_SESSION['student_id'] ?? '')))) {
         header('location:../index.php');
+        exit;
     }
+
+$headerStudentId = (int) $_SESSION['student_id'];
+$headerModel = new class_model();
+$headerUser = $headerModel->student_account($headerStudentId);
+$headerFirstName = trim((string) ($headerUser['first_name'] ?? ''));
+$headerLastName = trim((string) ($headerUser['last_name'] ?? ''));
+$headerInitials = strtoupper(substr($headerFirstName, 0, 1) . substr($headerLastName, 0, 1));
+$headerInitials = $headerInitials !== '' ? $headerInitials : 'ST';
+$headerPhotoUrl = (string) ($headerUser['profile_photo_url'] ?? '');
 
 ?>
 
@@ -152,22 +161,21 @@ border-radius: 50%;
 background:#d6821c;
 font-size: 16px;
 color: #fff;
-text-align: center;
-line-height: 41px;
 margin: 0px 0;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+position: relative;
+font-weight: 600;
 }
 
-/*Profile image */
-#profileImage_2 {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  background:#d6821c;
-  font-size: 35px;
-  color: #fff;
-  text-align: center;
-  line-height: 150px;
-  margin: 20px 0;
+#profileImage .profile-photo-image {
+width: 100%;
+height: 100%;
+object-fit: cover;
+position: absolute;
+inset: 0;
 }
 
     </style>
@@ -199,20 +207,17 @@ margin: 0px 0;
                             </div>
                         </li>&nbsp;&nbsp;
                          <li class="nav-item dropdown nav-user">
-                            <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><!-- <img id="profileImage" alt="" class="user-avatar-md rounded-circle"> -->
-                                <div id="profileImage"></div>
+                            <a class="nav-link nav-user-img" href="#" id="navbarDropdownMenuLink2" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Open profile menu">
+                                <div id="profileImage">
+                                    <span><?= htmlspecialchars($headerInitials, ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <img class="profile-photo-image" src="<?= htmlspecialchars($headerPhotoUrl, ENT_QUOTES, 'UTF-8'); ?>" alt="Profile photo" onerror="this.remove()">
+                                </div>
                             </a>
                             
                             <div class="dropdown-menu dropdown-menu-right nav-user-dropdown" aria-labelledby="navbarDropdownMenuLink2">
                                 <div class="nav-user-info" style="background-color: #666">
                                     <h5 class="mb-0 text-white nav-user-name">
-                                    <?php
-
-                                        $student_id = $_SESSION['student_id'];
-                                        $conn = new class_model();
-                                        $user = $conn->student_account($student_id);
-                                        echo '<center><h4 class = "text-warning"><b>Student:</b> <span id="lastName">'.ucfirst($user['last_name']).'</span>, <span id="firstName">'.ucfirst($user['first_name']).'</span></h4></center>';
-                                    ?>
+                                    <center><h4 class="text-warning"><b>Student:</b> <span id="lastName"><?= htmlspecialchars(ucfirst($headerLastName), ENT_QUOTES, 'UTF-8'); ?></span>, <span id="firstName"><?= htmlspecialchars(ucfirst($headerFirstName), ENT_QUOTES, 'UTF-8'); ?></span></h4></center>
                                     </h5>
                                     <a href="logout/logout.php"><i class="fas fa-power-off mr-2"></i><span class="ml-3">Logout</span></a>
                                 </div>
@@ -221,15 +226,12 @@ margin: 0px 0;
                                 <a class="dropdown-item" href="../index.html"><i class="fas fa-power-off mr-2"></i>Logout</a> -->
                             </div>
                         </li>
+                        <li class="nav-item d-none d-md-flex align-items-center ml-2">
+                            <a class="topbar-logout" href="logout/logout.php" title="Logout">
+                                <i class="fas fa-sign-out-alt"></i><span>Logout</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </nav>
         </div>
-   <script type="text/javascript">
-        $(document).ready(function(){
-          var firstName = $('#firstName').text();
-          var lastName = $('#lastName').text();
-          var intials = $('#firstName').text().charAt(0) + $('#lastName').text().charAt(0);
-          var profileImage = $('#profileImage').text(intials);
-        });
-    </script>

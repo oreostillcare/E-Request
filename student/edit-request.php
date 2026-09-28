@@ -1,4 +1,4 @@
-       <?php include('main_header/header.php');?>
+<?php include('main_header/header.php');?>
         <!-- ============================================================== -->
         <!-- end navbar -->
         <!-- ============================================================== -->
@@ -123,14 +123,6 @@
     <script src="../assets/vendor/bootstrap/js/bootstrap.bundle.js"></script>
     <script src="../assets/vendor/parsley/parsley.js"></script>
     <script src="../assets/libs/js/main-js.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function(){
-          var firstName = $('#firstName').text();
-          var lastName = $('#lastName').text();
-          var intials = $('#firstName').text().charAt(0) + $('#lastName').text().charAt(0);
-          var profileImage = $('#profileImage').text(intials);
-        });
-    </script>
      <script>
           document.addEventListener('DOMContentLoaded', () => {
               let btn = document.querySelector('#edit-request');

@@ -1,10 +1,10 @@
-
 <?php
  
   include('../init/model/class_model.php');
        session_start();
 if (!(trim((string) ($_SESSION['user_id'] ?? '')))) {
         header('location:../index.php');
+        exit;
     }
 
 ?>

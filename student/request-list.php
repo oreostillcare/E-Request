@@ -1,4 +1,4 @@
-       <?php include('main_header/header.php');?>
+<?php include('main_header/header.php');?>
         <!-- ============================================================== -->
         <!-- end navbar -->
         <!-- ============================================================== -->
@@ -147,14 +147,6 @@
     <script src="../assets/vendor/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="../assets/vendor/datatables/js/buttons.bootstrap4.min.js"></script>
     <script src="../assets/vendor/datatables/js/data-table.js"></script>
-    <script type="text/javascript">
-        $(document).ready(function(){
-          var firstName = $('#firstName').text();
-          var lastName = $('#lastName').text();
-          var intials = $('#firstName').text().charAt(0) + $('#lastName').text().charAt(0);
-          var profileImage = $('#profileImage').text(intials);
-        });
-    </script>
     <script>
     $(document).ready(function() {
 
