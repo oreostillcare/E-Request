@@ -26,7 +26,6 @@ if (!(trim((string) ($_SESSION['student_id'] ?? '')))) {
     <link rel="stylesheet" type="text/css" href="../assets/vendor/datatables/css/select.bootstrap4.css">
     <link rel="stylesheet" type="text/css" href="../assets/vendor/datatables/css/fixedHeader.bootstrap4.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <style>@import url('https://fonts.googleapis.com/css2?family=Diplomata+SC&family=Yanone+Kaffeesatz&display=swap');</style> 
     <title>E-Request</title>
     <style>
         ul.navbar-nav li a{
@@ -91,7 +90,7 @@ if (!(trim((string) ($_SESSION['student_id'] ?? '')))) {
     border-radius: 5px;
     width: 100%;
     font-size: 18px;
-    font-family: poppins;
+    font-family: 'Poppins', sans-serif;
 }
 .form-box input[type=checkbox] {
     display: none;
