@@ -50,7 +50,7 @@
                         }
                         return $randomString;
                     }
-                    $student = (int) ($_GET['student'] ?? 0);
+                    $student = (int) $_SESSION['student_id'];
                     $docname = $_GET['document-name'] ?? '';
                     $date_releasing = $_GET['date-release'] ?? '';
                     $conn = new class_model();

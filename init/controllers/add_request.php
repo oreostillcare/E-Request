@@ -1,5 +1,6 @@
 <?php
   require_once "../model/class_model.php";
+	$authenticated_student_id = require_authenticated_session('student_id');
 
 	if(ISSET($_POST)){
 		$conn = new class_model();
@@ -11,7 +12,7 @@
 		$no_ofcopies = trim($_POST['no_ofcopies']);
 	    $date_request = trim($_POST['date_request']);
 		$received = "Received";
-		$student_id = trim($_POST['student_id']);
+		$student_id = $authenticated_student_id;
 
 
 		$request = $conn->add_request($control_no, $studentID_no, $document_name, $purpose_ofrequesting, $no_ofcopies, $date_request, $received, $student_id);

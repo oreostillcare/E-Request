@@ -66,13 +66,17 @@ class class_model
         }, []);
     }
 
-    public function get_request($request_id, $student_number): array
+    public function get_request($request_id, $student_number, $student_id = null): array
     {
-        return $this->attempt(function () use ($request_id, $student_number) {
-            $rows = $this->db->select('tbl_documentrequest', [
+        return $this->attempt(function () use ($request_id, $student_number, $student_id) {
+            $filters = [
                 'request_id' => 'eq.' . (int) $request_id,
                 'studentID_no' => 'eq.' . $student_number,
-            ], ['limit' => 1]);
+            ];
+            if ($student_id !== null) {
+                $filters['student_id'] = 'eq.' . (int) $student_id;
+            }
+            $rows = $this->db->select('tbl_documentrequest', $filters, ['limit' => 1]);
             return $rows[0] ?? [];
         }, []);
     }
@@ -167,7 +171,7 @@ class class_model
         });
     }
 
-    public function edit_request($control_no, $studentID_no, $document_name, $purpose_ofrequesting, $no_ofcopies, $date_request, $request_id): bool
+    public function edit_request($control_no, $studentID_no, $document_name, $purpose_ofrequesting, $no_ofcopies, $date_request, $request_id, $student_id): bool
     {
         return $this->attempt(fn () => $this->db->update('tbl_documentrequest', [
             'control_no' => (string) $control_no,
@@ -176,12 +180,18 @@ class class_model
             'purpose_ofrequesting' => (string) $purpose_ofrequesting,
             'no_ofcopies' => (string) $no_ofcopies,
             'date_request' => (string) $date_request,
-        ], ['request_id' => 'eq.' . (int) $request_id]));
+        ], [
+            'request_id' => 'eq.' . (int) $request_id,
+            'student_id' => 'eq.' . (int) $student_id,
+        ]));
     }
 
-    public function delete_request($request_id): bool
+    public function delete_request($request_id, $student_id): bool
     {
-        return $this->attempt(fn () => $this->db->delete('tbl_documentrequest', ['request_id' => 'eq.' . (int) $request_id]));
+        return $this->attempt(fn () => $this->db->delete('tbl_documentrequest', [
+            'request_id' => 'eq.' . (int) $request_id,
+            'student_id' => 'eq.' . (int) $student_id,
+        ]));
     }
 
     public function notification_rows($student_id): array

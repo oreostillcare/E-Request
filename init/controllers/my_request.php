@@ -1,5 +1,6 @@
 <?php
   require_once "../model/class_model.php";
+	$authenticated_student_id = require_authenticated_session('student_id');
 
 	if(ISSET($_POST)){
 		$conn = new class_model();
@@ -9,7 +10,7 @@
 		$document_name = trim($_POST['document_name']);
 		$date_releasing = trim($_POST['date_releasing']);
 	    $reference_number = trim($_POST['ref_number'] ?? '');
-		$student_id = trim($_POST['student_id']);
+		$student_id = $authenticated_student_id;
 		$Verified = "Verified";
 		
 

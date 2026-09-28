@@ -1,5 +1,6 @@
 <?php
   require_once "../model/class_model.php";
+	require_authenticated_session('user_id');
 
  function createRandomIDnumber() {
  	$chars = "003232303232023232023456789";

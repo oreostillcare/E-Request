@@ -1,10 +1,11 @@
 <?php
   require_once "../model/class_model.php";;
+	$authenticated_student_id = require_authenticated_session('student_id');
 	if(ISSET($_POST)){
 		$conn = new class_model();
 
 		$password = trim($_POST['password']);
-		$student_id = trim($_POST['student_id']);
+		$student_id = $authenticated_student_id;
 
 		$pass = $conn->change_password($password, $student_id);
 		if($pass == TRUE){

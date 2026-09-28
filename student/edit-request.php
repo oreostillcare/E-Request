@@ -39,7 +39,7 @@
                     $GET_reqid = intval($_GET['request'] ?? 0);
                     $student_number = $_GET['student-number'] ?? '';
                     $conn = new class_model();
-                    $row = $conn->get_request($GET_reqid, $student_number);
+                    $row = $conn->get_request($GET_reqid, $student_number, (int) $_SESSION['student_id']);
                     if ($row) {
                    ?>
                          <div class="row">

@@ -99,3 +99,19 @@ function configure_app_session(): void
 
 configure_app_session();
 
+function require_authenticated_session(string $key): int
+{
+    if (session_status() === PHP_SESSION_NONE) {
+        session_start();
+    }
+
+    $id = (int) ($_SESSION[$key] ?? 0);
+    if ($id <= 0) {
+        http_response_code(401);
+        header('Content-Type: text/plain; charset=utf-8');
+        exit('Unauthorized');
+    }
+
+    return $id;
+}
+

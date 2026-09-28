@@ -1,5 +1,6 @@
 <?php
   require_once "../model/class_model.php";
+	require_authenticated_session('user_id');
 	if(ISSET($_POST)){
 		$conn = new class_model();
 

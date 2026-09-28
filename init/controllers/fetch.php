@@ -1,13 +1,12 @@
 <?php
 
 require_once '../model/class_model.php';
-session_start();
+$student_id = require_authenticated_session('student_id');
 
 if (!isset($_POST['view'])) {
     exit;
 }
 
-$student_id = (int) ($_SESSION['student_id'] ?? 0);
 $conn = new class_model();
 $rows = $conn->notification_rows($student_id);
 $output = '';

@@ -1,6 +1,7 @@
 <?php
 
 require_once '../model/class_model.php';
+require_authenticated_session('user_id');
 
 if (!isset($_POST['view'])) {
     exit;

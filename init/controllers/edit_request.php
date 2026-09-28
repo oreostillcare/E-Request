@@ -1,5 +1,6 @@
 <?php
   require_once "../model/class_model.php";
+	$student_id = require_authenticated_session('student_id');
 
 	if(ISSET($_POST)){
 		$conn = new class_model();
@@ -14,7 +15,7 @@
 		$request_id = trim($_POST['request_id']);
 
 
-		$request = $conn->edit_request($control_no, $studentID_no, $document_name, $purpose_ofrequesting, $no_ofcopies, $date_request, $request_id);
+		$request = $conn->edit_request($control_no, $studentID_no, $document_name, $purpose_ofrequesting, $no_ofcopies, $date_request, $request_id, $student_id);
 		if($request == TRUE){
 		    echo '<div class="alert alert-success">Edit Request Successfully!</div><script> setTimeout(function() {  window.history.go(-1); }, 1000); </script>';
 
